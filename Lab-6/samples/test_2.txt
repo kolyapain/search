@@ -1,0 +1,600 @@
+too be are not to be
+omegalul
+
+Stack Overflow
+Products
+Customers
+Use cases
+Search…
+Log in Sign up
+By using our site, you acknowledge that you have read and understand our Cookie Policy, Privacy Policy, and our Terms of Service.
+
+Home
+PUBLIC
+Stack Overflow
+Tags
+Users
+Jobs
+TEAMS
+What’s this?
+Free 30 Day Trial
+Lazy Method for Reading Big File in Python?
+Ask Question
+Asked 11 years, 1 month ago
+Active 1 month ago
+Viewed 228k times
+
+283
+
+
+186
+I have a very big file 4GB and when I try to read it my computer hangs. So I want to read it piece by piece and after processing each piece store the processed piece into another file and read next piece.
+
+Is there any method to yield these pieces ?
+
+I would love to have a lazy method.
+
+python file-io generator
+followshareimprove this question
+edited Feb 6 '09 at 9:25
+asked Feb 6 '09 at 9:11
+
+Pratik Deoghare
+26.6k2727 gold badges9090 silver badges139139 bronze badges
+add a comment
+11 Answers
+Active
+Oldest
+Votes
+
+413
+
+To write a lazy function, just use yield:
+
+def read_in_chunks(file_object, chunk_size=1024):
+    """Lazy function (generator) to read a file piece by piece.
+    Default chunk size: 1k."""
+    while True:
+        data = file_object.read(chunk_size)
+        if not data:
+            break
+        yield data
+
+
+with open('really_big_file.dat') as f:
+    for piece in read_in_chunks(f):
+        process_data(piece)
+Another option would be to use iter and a helper function:
+
+f = open('really_big_file.dat')
+def read1k():
+    return f.read(1024)
+
+for piece in iter(read1k, ''):
+    process_data(piece)
+If the file is line-based, the file object is already a lazy generator of lines:
+
+for line in open('really_big_file.dat'):
+    process_data(line)
+followshareimprove this answer
+edited Feb 3 at 11:24
+
+Boštjan Mejak
+28144 silver badges1212 bronze badges
+answered Feb 6 '09 at 9:20
+
+nosklo
+175k4949 gold badges265265 silver badges279279 bronze badges
+So the line f = open('really_big_file.dat') is just a pointer without any memory consumption? (I mean the memory consumed is the same regardless the file size?) How it will affect performance if I use urllib.readline() instead of f.readline()? – sumid Aug 24 '11 at 0:53
+4
+Good practice to use open('really_big_file.dat', 'rb') for compatibility with our Posix-challenged Windows using colleagues. – Tal Weiss Oct 31 '12 at 12:42
+6
+Missing rb as @Tal Weiss mentioned; and missing a file.close() statement (could use with open('really_big_file.dat', 'rb') as f: to accomplish same; See here for another concise implementation – cod3monk3y Feb 18 '14 at 5:40
+3
+@cod3monk3y: text and binary files are different things. Both types are useful but in different cases. The default (text) mode may be useful here i.e., 'rb' is not missing. – jfs Jan 18 '15 at 17:37
+2
+@j-f-sebastian: true, the OP did not specify whether he was reading textual or binary data. But if he's using python 2.7 on Windows and is reading binary data, it is certainly worth noting that if he forgets the 'b' his data will very likely be corrupted. From the docs - Python on Windows makes a distinction between text and binary files; [...] it’ll corrupt binary data like that in JPEG or EXE files. Be very careful to use binary mode when reading and writing such files. – cod3monk3y Jan 18 '15 at 19:00
+show 18 more comments
+
+40
+
+If your computer, OS and python are 64-bit, then you can use the mmap module to map the contents of the file into memory and access it with indices and slices. Here an example from the documentation:
+
+import mmap
+with open("hello.txt", "r+") as f:
+    # memory-map the file, size 0 means whole file
+    map = mmap.mmap(f.fileno(), 0)
+    # read content via standard file methods
+    print map.readline()  # prints "Hello Python!"
+    # read content via slice notation
+    print map[:5]  # prints "Hello"
+    # update content using slice notation;
+    # note that new content must have same size
+    map[6:] = " world!\n"
+    # ... and read again using standard file methods
+    map.seek(0)
+    print map.readline()  # prints "Hello  world!"
+    # close the map
+    map.close()
+If either your computer, OS or python are 32-bit, then mmap-ing large files can reserve large parts of your address space and starve your program of memory.
+
+followshareimprove this answer
+edited May 23 '17 at 11:55
+
+Community♦
+111 silver badge
+answered Feb 6 '09 at 9:41
+unbeknown
+7
+How is this supposed to work? What if I have a 32GB file? What if I'm on a VM with 256MB RAM? Mmapping such a huge file is really never a good thing. – Savino Sguera Oct 3 '11 at 8:55
+4
+This answer deserve a -12 vote . THis will kill anyone using that for big files. – Phyo Arkar Lwin Mar 8 '12 at 18:43
+22
+This can work on a 64-bit Python even for big files. Even though the file is memory-mapped, it's not read to memory, so the amount of physical memory can be much smaller than the file size. – pts Jan 12 '13 at 11:18
+1
+@SavinoSguera does the size of physical memory matter with mmaping a file? – Nick T Feb 12 '14 at 23:24
+17
+@V3ss0n: I've tried to mmap 32GB file on 64-bit Python. It works (I have RAM less than 32GB): I can access the start, the middle, and the end of the file using both Sequence and file interfaces. – jfs Feb 19 '14 at 18:15
+show 1 more comment
+
+33
+
+file.readlines() takes in an optional size argument which approximates the number of lines read in the lines returned.
+
+bigfile = open('bigfilename','r')
+tmp_lines = bigfile.readlines(BUF_SIZE)
+while tmp_lines:
+    process([line for line in tmp_lines])
+    tmp_lines = bigfile.readlines(BUF_SIZE)
+followshareimprove this answer
+edited Oct 2 '19 at 15:33
+
+nbro
+9,6001414 gold badges6969 silver badges118118 bronze badges
+answered Jan 21 '10 at 18:27
+
+Anshul
+36933 silver badges44 bronze badges
+1
+it's a really great idea, especially when it is combined with the defaultdict to split big data into smaller ones. – Frank Wang Aug 31 '14 at 15:05
+4
+I would recommend to use .read() not .readlines(). If the file is binary it's not going to have line breaks. – Myers Carpenter Nov 3 '15 at 15:16
+add a comment
+
+28
+
+There are already many good answers, but if your entire file is on a single line and you still want to process "rows" (as opposed to fixed-size blocks), these answers will not help you.
+
+99% of the time, it is possible to process files line by line. Then, as suggested in this answer, you can to use the file object itself as lazy generator:
+
+with open('big.csv') as f:
+    for line in f:
+        process(line)
+However, I once ran into a very very big (almost) single line file, where the row separator was in fact not '\n' but '|'.
+
+Reading line by line was not an option, but I still needed to process it row by row.
+Converting'|' to '\n' before processing was also out of the question, because some of the fields of this csv contained '\n' (free text user input).
+Using the csv library was also ruled out because the fact that, at least in early versions of the lib, it is hardcoded to read the input line by line.
+For these kind of situations, I created the following snippet:
+
+def rows(f, chunksize=1024, sep='|'):
+    """
+    Read a file where the row separator is '|' lazily.
+
+    Usage:
+
+    >>> with open('big.csv') as f:
+    >>>     for r in rows(f):
+    >>>         process(row)
+    """
+    curr_row = ''
+    while True:
+        chunk = f.read(chunksize)
+        if chunk == '': # End of file
+            yield curr_row
+            break
+        while True:
+            i = chunk.find(sep)
+            if i == -1:
+                break
+            yield curr_row + chunk[:i]
+            curr_row = ''
+            chunk = chunk[i+1:]
+        curr_row += chunk
+I was able to use it successfully to solve my problem. It has been extensively tested, with various chunk sizes.
+
+Test suite, for those who want to convince themselves.
+
+test_file = 'test_file'
+
+def cleanup(func):
+    def wrapper(*args, **kwargs):
+        func(*args, **kwargs)
+        os.unlink(test_file)
+    return wrapper
+
+@cleanup
+def test_empty(chunksize=1024):
+    with open(test_file, 'w') as f:
+        f.write('')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 1
+
+@cleanup
+def test_1_char_2_rows(chunksize=1024):
+    with open(test_file, 'w') as f:
+        f.write('|')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 2
+
+@cleanup
+def test_1_char(chunksize=1024):
+    with open(test_file, 'w') as f:
+        f.write('a')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 1
+
+@cleanup
+def test_1025_chars_1_row(chunksize=1024):
+    with open(test_file, 'w') as f:
+        for i in range(1025):
+            f.write('a')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 1
+
+@cleanup
+def test_1024_chars_2_rows(chunksize=1024):
+    with open(test_file, 'w') as f:
+        for i in range(1023):
+            f.write('a')
+        f.write('|')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 2
+
+@cleanup
+def test_1025_chars_1026_rows(chunksize=1024):
+    with open(test_file, 'w') as f:
+        for i in range(1025):
+            f.write('|')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 1026
+
+@cleanup
+def test_2048_chars_2_rows(chunksize=1024):
+    with open(test_file, 'w') as f:
+        for i in range(1022):
+            f.write('a')
+        f.write('|')
+        f.write('a')
+        # -- end of 1st chunk --
+        for i in range(1024):
+            f.write('a')
+        # -- end of 2nd chunk
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 2
+
+@cleanup
+def test_2049_chars_2_rows(chunksize=1024):
+    with open(test_file, 'w') as f:
+        for i in range(1022):
+            f.write('a')
+        f.write('|')
+        f.write('a')
+        # -- end of 1st chunk --
+        for i in range(1024):
+            f.write('a')
+        # -- end of 2nd chunk
+        f.write('a')
+    with open(test_file) as f:
+        assert len(list(rows(f, chunksize=chunksize))) == 2
+
+if __name__ == '__main__':
+    for chunksize in [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]:
+        test_empty(chunksize)
+        test_1_char_2_rows(chunksize)
+        test_1_char(chunksize)
+        test_1025_chars_1_row(chunksize)
+        test_1024_chars_2_rows(chunksize)
+        test_1025_chars_1026_rows(chunksize)
+        test_2048_chars_2_rows(chunksize)
+        test_2049_chars_2_rows(chunksize)
+followshareimprove this answer
+edited Nov 19 '19 at 21:13
+answered Jun 11 '15 at 8:23
+
+user48678
+1,44522 gold badges1717 silver badges2828 bronze badges
+add a comment
+
+11
+
+f = ... # file-like object, i.e. supporting read(size) function and 
+        # returning empty string '' when there is nothing to read
+
+def chunked(file, chunk_size):
+    return iter(lambda: file.read(chunk_size), '')
+
+for data in chunked(f, 65536):
+    # process the data
+UPDATE: The approach is best explained in https://stackoverflow.com/a/4566523/38592
+
+followshareimprove this answer
+edited May 23 '17 at 11:47
+
+Community♦
+111 silver badge
+answered Mar 31 '12 at 1:50
+
+myroslav
+3,2251919 silver badges2727 bronze badges
+This works well for blobs, but may not be good for line separated content (like CSV, HTML, etc where processing needs to be handled line by line) – cgseller Aug 6 '15 at 0:42
+add a comment
+
+3
+
+I think we can write like this:
+
+def read_file(path, block_size=1024): 
+    with open(path, 'rb') as f: 
+        while True: 
+            piece = f.read(block_size) 
+            if piece: 
+                yield piece 
+            else: 
+                return
+
+for piece in read_file(path):
+    process_piece(piece)
+followshareimprove this answer
+answered Nov 6 '13 at 2:15
+
+TonyCoolZhu
+6122 bronze badges
+add a comment
+
+3
+
+Refer to python's official documentation https://docs.python.org/zh-cn/3/library/functions.html?#iter
+
+Maybe this method is more pythonic:
+
+from functools import partial
+
+"""A file object returned by open() is a iterator with
+read method which could specify current read's block size"""
+with open('mydata.db', 'r') as f_in:
+
+    part_read = partial(f_in.read, 1024*1024)
+    iterator = iter(part_read, b'')
+
+    for index, block in enumerate(iterator, start=1):
+        block = process_block(block)    # process block data
+        with open(f'{index}.txt', 'w') as f_out:
+            f_out.write(block)
+followshareimprove this answer
+answered Jun 23 '19 at 7:49
+
+bruce
+5611 silver badge44 bronze badges
+add a comment
+
+2
+
+i am not allowed to comment due to my low reputation, but SilentGhosts solution should be much easier with file.readlines([sizehint])
+
+python file methods
+
+edit: SilentGhost is right, but this should be better than:
+
+s = "" 
+for i in xrange(100): 
+   s += file.next()
+followshareimprove this answer
+edited Feb 6 '09 at 10:59
+answered Feb 6 '09 at 10:37
+
+sinzi
+12133 bronze badges
+ok, sorry, you are absolutely right. but maybe this solution will make you happier ;) : s = "" for i in xrange(100): s += file.next() – sinzi Feb 6 '09 at 10:58
+1
+-1: Terrible solution, this would mean creating a new string in memory each line, and copying the entire file data read to the new string. The worst performance and memory. – nosklo Feb 6 '09 at 15:28
+why would it copy the entire file data into a new string? from the python documentation: In order to make a for loop the most efficient way of looping over the lines of a file (a very common operation), the next() method uses a hidden read-ahead buffer. – sinzi Feb 6 '09 at 15:37
+3
+@sinzi: "s +=" or concatenating strings makes a new copy of the string each time, since the string is immutable, so you are creating a new string. – nosklo Feb 6 '09 at 16:50
+1
+@nosklo: these are details of implementation, list comprehension can be used in it's place – SilentGhost Feb 6 '09 at 17:05
+add a comment
+
+1
+
+I'm in a somewhat similar situation. It's not clear whether you know chunk size in bytes; I usually don't, but the number of records (lines) that is required is known:
+
+def get_line():
+     with open('4gb_file') as file:
+         for i in file:
+             yield i
+
+lines_required = 100
+gen = get_line()
+chunk = [i for i, j in zip(gen, range(lines_required))]
+Update: Thanks nosklo. Here's what I meant. It almost works, except that it loses a line 'between' chunks.
+
+chunk = [next(gen) for i in range(lines_required)]
+Does the trick w/o losing any lines, but it doesn't look very nice.
+
+followshareimprove this answer
+edited Mar 15 '11 at 5:33
+
+Jason Plank
+2,28244 gold badges2828 silver badges3939 bronze badges
+answered Feb 6 '09 at 10:12
+
+SilentGhost
+232k5252 gold badges280280 silver badges275275 bronze badges
+1
+is this pseudo code? it won't work. It is also needless confusing, you should make the number of lines an optional parameter to the get_line function. – nosklo Feb 6 '09 at 15:26
+add a comment
+
+0
+
+To process line by line, this is an elegant solution:
+
+  def stream_lines(file_name):
+    file = open(file_name)
+    while True:
+      line = file.readline()
+      if not line:
+        file.close()
+        break
+      yield line
+As long as there're no blank lines.
+
+followshareimprove this answer
+answered May 1 '12 at 23:12
+
+crizCraig
+6,30733 gold badges4141 silver badges4646 bronze badges
+6
+This is just an overly complicated, less robust, and slower equivalent to what open already gives you. A file is already an iterator over its lines. – abarnert Jul 17 '13 at 22:07
+add a comment
+
+-2
+
+you can use following code.
+
+file_obj = open('big_file') 
+open() returns a file object
+
+then use os.stat for getting size
+
+file_size = os.stat('big_file').st_size
+
+for i in range( file_size/1024):
+    print file_obj.read(1024)
+followshareimprove this answer
+answered Jun 18 '15 at 13:20
+
+shrikant
+16511 silver badge77 bronze badges
+wouldn't read the whole file if size isn't a multiply of 1024 – kmaork Dec 4 '16 at 11:11
+add a comment
+Highly active question. Earn 10 reputation in order to answer this question. The reputation requirement helps protect this question from spam and non-answer activity.
+Not the answer you're looking for? Browse other questions tagged python file-io generator or ask your own question.
+The Overflow Blog
+Podcast: Right Back At Ya
+We’re launching an Instagram account
+Featured on Meta
+An Update On Creative Commons Licensing
+Community and Moderator guidelines for escalating issues via new response…
+Triage needs to be fixed urgently, and users need to be notified upon…
+Upcoming Feature: New Question Close Experience
+3Shape 
+3Shape
+Medical Devices
+We have great benefits!
+Breakfast, fruit, snacks and lunch cooked by our resident chef
+Central location
+Annual Innovation Day
+Access to brand new hardware
++ 6 more benefits
+Learn more
+Linked
+4
+Efficient way to read data in python
+1
+Opening 1GB wave file leads to memory error
+0
+Manipulating very large text file and clustering analysis
+2
+Memory error while lowercasing lines in a large textfile
+0
+how to process binary strings in chunks from memory?
+185
+Get MD5 hash of big files in Python
+44
+Why doesn't Python's mmap work with large files?
+33
+How to read file N lines at a time in Python?
+44
+Python how to read N number of lines at a time
+25
+Python file iterator over a binary file with newer idiom
+see more linked questions…
+Related
+5458
+How do I check whether a file exists without exceptions?
+4777
+Calling an external command from Python
+5608
+What are metaclasses in Python?
+5876
+Does Python have a ternary conditional operator?
+3196
+How do I tell if a regular file does not exist in Bash?
+2766
+Find and restore a deleted file in a Git repository
+3473
+How do I list all files of a directory?
+3599
+Does Python have a string 'contains' substring method?
+2047
+How to delete a file or folder?
+Hot Network Questions
+Logic behind structures like «в общей сложности»
+How does one adjust the equivalent of the barrel adjuster on the XTR RD-M9000 rear derailleur?
+Is there a better way to formulate this constraint?
+Build general form of an infinite sequence
+Can someone explain this computer suggestion to me?
+If liquid and gas are both chaotic states of matter, what's the difference between them on the molecular level?
+How can I assess my recession risk as a software developer?
+Is it fine to send a message to the author of a paper if I don't understand something and want to clarify it?
+Can a naked Changeling use its Shapechanger feature to duplicate the appearance of clothing?
+Is long-term renting through booking.com a scam?
+2000's novel where a man wakes up to find a chunk of his brain replaced by a cybernetic implant he turns out to have developed himself
+Why does a square wave in frequency domain have less amplitude?
+Why did the KH-11 get the nickname "Kennen"?
+What are the differences between a $25 sleeping bag and a $440 sleeping bag if they have the same temp rating?
+Why have i++; i--; right after each other?
+Are there any books/articles on how to use options to be long volatility (implied or realized)?
+Help with proof of polynomial divisor
+How is pasteurization different from sterilization?
+What exactly is an arrow in a category?
+meaning of 日本の風土
+Can I do a multi day cycle tour in Germany now (during Corona time), on my own, camping in public places?
+How has the handling of the corona virus (covid-19) affected Donald trumps approval ratings?
+How do Minecraft know where village's buildings are if the village is not generated yet?
+Transliteration of the name "Seraphina"
+ Question feed
+
+STACK OVERFLOW
+Questions
+Jobs
+Developer Jobs Directory
+Salary Calculator
+Help
+Mobile
+Disable Responsiveness
+PRODUCTS
+Teams
+Talent
+Advertising
+Enterprise
+COMPANY
+About
+Press
+Work Here
+Legal
+Privacy Policy
+Contact Us
+STACK EXCHANGE
+NETWORK
+Technology
+Life / Arts
+Culture / Recreation
+Science
+Other
+Blog
+Facebook
+Twitter
+LinkedIn
+site design / logo © 2020 Stack Exchange Inc; user contributions licensed under cc by-sa 4.0 with attribution required. rev 2020.3.28.36404
