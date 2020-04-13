@@ -114,7 +114,8 @@ class Positional_Indexes:
                             continue
                         new_reqs = []
                         for req in all_posible_requests:
-                            new_reqs.append(req[:-1])
+                            if req[:-1] not in new_reqs:
+                                new_reqs.append(req[:-1])
                         for item in new_reqs:
                             item.append(dict_word)
                             all_posible_requests.append(item)
@@ -147,7 +148,7 @@ class Positional_Indexes:
                 min_ids.append(i)
         
         for id in min_ids:
-            if len(lst[id]) <= min + 1:
+            if len(lst[id]) <= ids[id] + 1:
                 return False
             ids[id] += 1
         return True
@@ -204,7 +205,8 @@ class Positional_Indexes:
                         continue
                     new_reqs = []
                     for req in all_posible_requests:
-                        new_reqs.append(req[:-1])
+                        if req[:-1] not in new_reqs:
+                            new_reqs.append(req[:-1])
                     for item in new_reqs:
                         item.append(p_word)
                         all_posible_requests.append(item)
@@ -236,7 +238,7 @@ class Positional_Indexes:
                     lists_ids.append(0)
                 
                 for item in words_lists:
-                    lists.append(list(item.keys()))
+                    lists.append(sorted(item.keys()))
                 # print(lists)
 
                 local_answer = []
