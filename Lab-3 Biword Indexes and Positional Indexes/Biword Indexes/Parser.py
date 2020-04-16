@@ -71,6 +71,8 @@ class Parser:
         for enc in encoding:
             try:
                 open(filename, encoding=enc).read()
+            except FileNotFoundError:
+                return 'unknown encoding'
             except (UnicodeDecodeError, LookupError):
                 pass
             else:

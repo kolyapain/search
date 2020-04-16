@@ -29,7 +29,6 @@ class Positional_Indexes:
 
     def big_data(self):
         book_list = [
-                'samples/Dyudeni_Kenterberiyskie_golovolomki_RuLit_Net.txt',
                 'samples/Alsina_Mir-matematiki_11_Tom-11-Karty-metro-i-neyronnye-seti-Teoriya-grafov_RuLit_Me.txt',
                 'samples/Arbones_Mir-matematiki_12_Tom-12-Chisla-osnova-garmonii-Muzyka-i-matematika_RuLit_Me.txt',
                 'samples/Kasalderrey_Mir-matematiki_16_Obman-chuvstv_RuLit_Me.txt',
@@ -39,25 +38,16 @@ class Positional_Indexes:
                 'samples/matematicheskie_chudesa_i_tajjny.u.txt',
                 'samples/Navarro_Mir-matematiki_31_Taynaya-zhizn-chisel_RuLit_Me.txt',
                 'samples/Smallian_Priklyucheniya_Alisyi_v_Strane_Golovolomok_RuLit_Net.txt',
-                'samples/Alone-in-West-Africa-Mary-Gaunt-[ebooksread.com].txt',
-                'samples/A-second-solemn-appe-John-Ireland-[ebooksread.com].txt',
-                'samples/Catalogue-of-the-Ret-Phyllis-Ackerma-[ebooksread.com].txt',
-                'samples/Confidential-Chats-w-William-Lee-How-[ebooksread.com].txt',
-                'samples/Famous-Composers-and-Various-[ebooksread.com].txt',
-                'samples/Folk-Lore-Notes--Vol-A--M--T--Jackso-[ebooksread.com].txt',
-                'samples/On-Sunset-Highways-Thomas-D--Murph-[ebooksread.com].txt',
-                'samples/Passages-from-the-Li-Charles-Babbage-[ebooksread.com].txt',
                 'samples/Sir-Edwin-Landseer-Frederick-G--St-[ebooksread.com].txt',
-                'samples/Studies-in-the-Evolu-Hiram-M---Hiram-[ebooksread.com].txt',
-                'samples/Telescopic-Work-for--William-F--Denn-[ebooksread.com].txt',
                 'samples/The-Letters-of-a-Por-Marianna-Alcofo-[ebooksread.com].txt',
                 'samples/The-Romance-of-a-Sho-Amy-Levy-[ebooksread.com].txt',
+                'samples/test_2.txt',
+                'samples/test.txt',
             ]
         
         for book in book_list:
-            data = self.parser.parse_file(book)
-            self.add_book(data, book)
-
+            self.parse_book(book)
+            
     def parse_book(self, book_name):
         data = self.parser.parse_file(book_name)
         self.add_book(data, book_name)
@@ -173,7 +163,6 @@ class Positional_Indexes:
             if self.step_first(words_pos, pos_ids) == False:
                 return False
 
-
     def search(self, _request):
         parsed_request = self.parse_request(_request)
         all_requests = self.find_all_posible_requests(parsed_request)
@@ -220,6 +209,6 @@ class Positional_Indexes:
 
 if __name__ == "__main__":
     s = Positional_Indexes()
-    s.test_parse()
+    s.big_data()
     s.search('too  be  or /2 not  to  be /1')
     

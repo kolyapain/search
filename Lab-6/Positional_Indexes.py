@@ -273,7 +273,7 @@ class Positional_Indexes:
 if __name__ == "__main__":
     s = Positional_Indexes()
     s.big_data()
-    s.search('to be')
+    s.search('to /1 be*')
     # while True:
     #     word = input('word to search: ')
     #     if len(word) == 0:

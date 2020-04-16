@@ -41,15 +41,18 @@ class Wildcard_Queries:
             check_parts.insert(0, str)
 
         s_word_len = len(s_word)
-        print(s_word)
         answers = []
+        print(s_word)
         for wildcard in self.data:
             try:
                 if s_word[:-1] == wildcard[-s_word_len:] or s_word[:-1] == wildcard[-s_word_len:-1]:
+                # if s_word[:-2] in wildcard:
                     tmp = wildcard
                     while tmp[-1] != '$':
                         tmp = tmp[-1] + tmp[:-1]
-                    answers.append(tmp)
+                    
+                    if tmp not in answers:
+                        answers.append(tmp)
             except:
                 pass
 

@@ -223,9 +223,7 @@ class Positional_Indexes:
 
     def calc_idft(self, term):
         N = len(self.book_to_int)
-        dft = 0
-        for k, v in self.data[term].items():
-            dft += len(v)
+        dft = len(self.data[term].keys())
         v = N/dft
         v = math.log(v, 2)
         return v
@@ -269,15 +267,7 @@ class Positional_Indexes:
 
                 while True:
                     if self.all_equal(lists, lists_ids) == True:
-                        id = lists[0][lists_ids[0]]
-                        words_pos = []
-                        pos_ids = []
-                        for item in words_lists:
-                            words_pos.append(item[id])
-                            pos_ids.append(0)
-                        if self.check_positions(words_pos, pos_ids) == True:
-                            local_answer.append(id)
-
+                        local_answer.append(lists[0][lists_ids[0]])
 
                     if self.step(lists, lists_ids) == False:
                         break
@@ -302,7 +292,7 @@ class Positional_Indexes:
 if __name__ == "__main__":
     s = Positional_Indexes()
     s.big_data()
-    s.search('to /1 be or not to be*')
+    s.search('to /1 be')
     # while True:
     #     word = input('word to search: ')
     #     if len(word) == 0:
