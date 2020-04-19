@@ -126,9 +126,13 @@ class BSBI:
         s_to_int = dict()
         unique_s_id = 0
         ### initial mmap for all blocks
-        # for i in range(self.current_block):
-        for i in range(10):
-            maps.append(mmap_record('blocks/block_'+str(i + 1)+'.txt'))
+        _i = 1
+        while True:
+            if os.path.isfile('blocks/block_'+str(_i + 1)+'.txt'):
+                maps.append(mmap_record('blocks/block_'+str(_i + 1)+'.txt'))
+                _i += 1
+            else:
+                break
 
         ws_pairs = [[]] * len(maps)
 
@@ -217,11 +221,10 @@ class BSBI:
 
         self.merge_blocks()
 
-if __name__ == "__main__":
+def reload():
     b = BSBI()
+    print('creating index...')
     b.bsbi([
-        'samples/test.txt', 
-        'samples/test_2.txt',
         'samples/Alsina_Mir-matematiki_11_Tom-11-Karty-metro-i-neyronnye-seti-Teoriya-grafov_RuLit_Me.txt',
         'samples/Arbones_Mir-matematiki_12_Tom-12-Chisla-osnova-garmonii-Muzyka-i-matematika_RuLit_Me.txt',
         'samples/Kasalderrey_Mir-matematiki_16_Obman-chuvstv_RuLit_Me.txt',
@@ -233,6 +236,7 @@ if __name__ == "__main__":
         'samples/Smallian_Priklyucheniya_Alisyi_v_Strane_Golovolomok_RuLit_Net.txt',
         'samples/Sir-Edwin-Landseer-Frederick-G--St-[ebooksread.com].txt',
         'samples/The-Letters-of-a-Por-Marianna-Alcofo-[ebooksread.com].txt',
-        'samples/The-Romance-of-a-Sho-Amy-Levy-[ebooksread.com].txt',
     ])
-    # b.bsbi([])
+
+if __name__ == "__main__":
+    reload()

@@ -24,22 +24,34 @@ class Parser:
     def parse_file(self, filename):
         #print(filename)
         enc = self.get_file_encoding(filename)
+        has_tags = False
         if enc != 'unknown encoding':
             if filename in self.book_names:
                 print("book has already been parsed")
                 return None
             self.book_names.append(filename)
-
+            if filename[-4:] == 'fb2':
+                has_tags = True
             f_dict = S_Dictionary()
             word = ''
             symbol = ''
             position = 1
-            with open(filename) as f:
+            with open(filename, encoding=enc) as f:
                 while True:
                     try:
                         symbol = f.read(1)
                     except:
                         symbol = ' '
+
+                    if symbol == '<':
+                        tag = ''
+                        while symbol != '>' and has_tags:
+                            try:
+                                symbol = f.read(1)
+                                tag += symbol
+                            except:
+                                break
+                        continue
 
                     if not symbol:
                         if len(word) > 1:
@@ -76,3 +88,10 @@ class Parser:
                 correct_encoding = enc
                 return enc
         return 'unknown encoding'
+
+
+if __name__ == "__main__":
+    p = Parser()
+    # data = p.parse_file('samples/Fenchenko_berja_L._Arun_Hram_Rassveta.fb2')
+    data = p.parse_file('samples/test.fb2')
+    print(data.data)

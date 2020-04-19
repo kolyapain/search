@@ -20,29 +20,19 @@ class Positional_Indexes:
 
         self.__unique_id = 0
 
-
-    def test_parse(self):
-        data = self.parser.parse_file('samples/test.txt')
-        self.add_book(data, 'samples/test.txt')
-        data = self.parser.parse_file('samples/test_2.txt')
-        self.add_book(data, 'samples/test_2.txt')
-
     def big_data(self):
         book_list = [
-                'samples/Alsina_Mir-matematiki_11_Tom-11-Karty-metro-i-neyronnye-seti-Teoriya-grafov_RuLit_Me.txt',
-                'samples/Arbones_Mir-matematiki_12_Tom-12-Chisla-osnova-garmonii-Muzyka-i-matematika_RuLit_Me.txt',
-                'samples/Kasalderrey_Mir-matematiki_16_Obman-chuvstv_RuLit_Me.txt',
-                'samples/Levshin_Karlikaniya_2_Puteshestvie-po-Karlikanii-i-Al-Dzhebre_RuLit_Me.txt',
-                'samples/Levshin_V-labirinte-chisel_RuLit_Net.txt',
-                'samples/Loyd_Samyie_znamenityie_golovolomki_mira_RuLit_Net.txt',
-                'samples/matematicheskie_chudesa_i_tajjny.u.txt',
-                'samples/Navarro_Mir-matematiki_31_Taynaya-zhizn-chisel_RuLit_Me.txt',
-                'samples/Smallian_Priklyucheniya_Alisyi_v_Strane_Golovolomok_RuLit_Net.txt',
-                'samples/Sir-Edwin-Landseer-Frederick-G--St-[ebooksread.com].txt',
-                'samples/The-Letters-of-a-Por-Marianna-Alcofo-[ebooksread.com].txt',
-                'samples/The-Romance-of-a-Sho-Amy-Levy-[ebooksread.com].txt',
-                'samples/test_2.txt',
-                'samples/test.txt',
+                '../samples/Alsina_Mir-matematiki_11_Tom-11-Karty-metro-i-neyronnye-seti-Teoriya-grafov_RuLit_Me.txt',
+                '../samples/Arbones_Mir-matematiki_12_Tom-12-Chisla-osnova-garmonii-Muzyka-i-matematika_RuLit_Me.txt',
+                '../samples/Kasalderrey_Mir-matematiki_16_Obman-chuvstv_RuLit_Me.txt',
+                '../samples/Levshin_Karlikaniya_2_Puteshestvie-po-Karlikanii-i-Al-Dzhebre_RuLit_Me.txt',
+                '../samples/Levshin_V-labirinte-chisel_RuLit_Net.txt',
+                '../samples/Loyd_Samyie_znamenityie_golovolomki_mira_RuLit_Net.txt',
+                '../samples/matematicheskie_chudesa_i_tajjny.u.txt',
+                '../samples/Navarro_Mir-matematiki_31_Taynaya-zhizn-chisel_RuLit_Me.txt',
+                '../samples/Smallian_Priklyucheniya_Alisyi_v_Strane_Golovolomok_RuLit_Net.txt',
+                '../samples/Sir-Edwin-Landseer-Frederick-G--St-[ebooksread.com].txt',
+                '../samples/The-Letters-of-a-Por-Marianna-Alcofo-[ebooksread.com].txt',
             ]
         
         for book in book_list:

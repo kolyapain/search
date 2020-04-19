@@ -5,7 +5,9 @@
 
 import Levenstein_Distance
 from Wildcard_Queries import Wildcard_Queries
-from BSBI import BSBI
+from BSBI import (BSBI, reload)
+import os
+from shutil import rmtree
 
 class Positional_Indexes:
     def __init__(self):
@@ -27,6 +29,12 @@ class Positional_Indexes:
         pass
 
     def big_data(self):
+        if not os.path.exists('index.txt'):
+            if os.path.exists('blocks'):
+                rmtree('blocks')
+            os.mkdir('blocks')
+            reload()
+
         with open('index.txt', 'r') as f:
 
             while True:
@@ -265,5 +273,5 @@ class Positional_Indexes:
 if __name__ == "__main__":
     s = Positional_Indexes()
     s.big_data()
-    s.search('to /1 be or not to be*')
+    s.search('to /1 be or not to be')
     

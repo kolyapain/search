@@ -5,9 +5,11 @@
 
 import Levenstein_Distance
 from Wildcard_Queries import Wildcard_Queries
-from BSBI import BSBI
+from BSBI import BSBI, reload
 from compression import (Dict_Compression, ByteCodec)
 import math
+import os
+from shutil import rmtree
 
 class Positional_Indexes:
     def __init__(self):
@@ -30,7 +32,13 @@ class Positional_Indexes:
         pass
 
     def big_data(self):
-        with open('coded_sources.txt') as f:
+        if not (os.path.exists('compressed_index.txt') and os.path.exists('coded_sources.txt')):
+            if os.path.exists('blocks'):
+                rmtree('blocks')
+            os.mkdir('blocks')
+            reload()
+
+        with open('coded_sources.txt', 'r') as f:
             lines = f.readlines()
             for l in lines:
                 name, code = l.split(' ')
@@ -236,8 +244,9 @@ class Positional_Indexes:
         for word in request:
             idft = self.calc_idft(word)
             for item in docs:
-                tf = len(self.data[word][item])
-                scored[item] += idft * tf
+                if item in self.data[word]:
+                    tf = len(self.data[word][item])
+                    scored[item] += idft * tf
         return scored
 
     def clustering(self, request):
@@ -250,7 +259,8 @@ class Positional_Indexes:
             for book, _ in self.data[word].items():
                 tmp[book] = 0
             idft = self.calc_idft(word)
-            for book, _ in self.data[word].items():
+            for book in self.data[word].keys():
+                
                 tf = len(self.data[word][book])
                 tmp[book] += idft * tf
 
@@ -270,15 +280,32 @@ class Positional_Indexes:
                 return
             answer = dict()
             for request in all_requests:
-                print("for request '", request_str, "'")
+                print("for request '", request, "'")
 
-                local_answer = self.clustering(request)
-                if len(cluster) == 0:
-                    break
+                cluster = self.clustering(request)
                 # print(cluster)
+                
+                words_lists = []
+                lists_ids = []
+                lists = []
 
+                for word in request:
+                    words_lists.append(cluster[word])
+                    lists_ids.append(0)
                 
-                
+                for item in words_lists:
+                    lists.append(sorted(item.keys()))
+                # print(lists)
+
+                local_answer = []
+
+                while True:
+                    if self.all_equal(lists, lists_ids) == True:
+                        local_answer.append(lists[0][lists_ids[0]])
+
+                    if self.step(lists, lists_ids) == False:
+                        break
+
                 if len(local_answer) > 0:
                     scored = self.scoring(request, local_answer)
 
@@ -294,21 +321,8 @@ class Positional_Indexes:
             results.reverse()
             for k, v in results:
                 print(k, self.int_to_book[k], 'score :', v)
-            print()
 
 if __name__ == "__main__":
     s = Positional_Indexes()
     s.big_data()
-    # print(s.data)
     s.search('to /1 be')
-    # while True:
-    #     word = input('word to search: ')
-    #     if len(word) == 0:
-    #         break
-        
-    #     res = s.compressed_all_words.find_word(word)
-    #     if res is None:
-    #         print('word : "', word, '" not found')
-    #     else:
-    #         print('word : "', word, '" found at id : ', res)
-

@@ -5,9 +5,11 @@
 
 import Levenstein_Distance
 from Wildcard_Queries import Wildcard_Queries
-from BSBI import BSBI
+from BSBI import (BSBI, reload)
 from compression import (Dict_Compression, ByteCodec)
 import math
+import os
+from shutil import rmtree
 
 class Positional_Indexes:
     def __init__(self):
@@ -30,6 +32,12 @@ class Positional_Indexes:
         pass
 
     def big_data(self):
+        if not (os.path.exists('compressed_index.txt') and os.path.exists('coded_sources.txt')):
+            if os.path.exists('blocks'):
+                rmtree('blocks')
+            os.mkdir('blocks')
+            reload()
+
         with open('coded_sources.txt') as f:
             lines = f.readlines()
             for l in lines:
@@ -317,16 +325,4 @@ class Positional_Indexes:
 if __name__ == "__main__":
     s = Positional_Indexes()
     s.big_data()
-    # print(s.data)
-    s.search('to /1 be')
-    # while True:
-    #     word = input('word to search: ')
-    #     if len(word) == 0:
-    #         break
-        
-    #     res = s.compressed_all_words.find_word(word)
-    #     if res is None:
-    #         print('word : "', word, '" not found')
-    #     else:
-    #         print('word : "', word, '" found at id : ', res)
-
+    s.search('to be')
